@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#put or symlink this in /etc/update-motd.d
+
+
+#choose a random command from /bin
+# in future also add other directories from path
+#command_name=$(ls /bin | shuf -n 1)
+#command_name=$(compgen -c | shuf -n 1) #should cover all possible commands
+
+# get the command of the day from our command_of_the_day script
+command_name=$(/usr/local/bin/command_of_the_day | cut -d ' ' -f 2 -)
+echo "The command of the day is: $command_name"
+
+
+#get a quick description of the command from the manual using man
+manual=$(man $command_name) #save cause it seems like reading the manual takes time
+declare -i line_number=$(grep -m 1 -n "\bNAME\b" <<< $manual | awk -F: '{print $1}') #find line with NAME on it
+line_number=$(($line_number + 1)) #synopsis follows the line with NAME on it
+sed "${line_number}q;d" <<< $manual #print the description
+
+
+#NOTE : sometimes the full description gets cut off since it extends to next line
+# right now we only print one line, fix that

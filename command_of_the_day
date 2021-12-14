@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#ideally, the cotd should be the same for all users
+# so we want to actually fix the homedirectory thing
+
+#first see if there's an entry for todays command in the log
+# we want a log so that we can ultimately show cotd in some report later
+today=$(date +"%F")
+logfile=~/command_of_the_day.log #insert here
+
+#make the logfile if it doesn't exist
+if ! test -e $logfile
+then
+	touch $logfile
+fi
+
+#check if there is entry for today's command
+if [ $(tail -n 1 $logfile | cut -d ' ' -f 1 -) = $today ]
+then
+	tail -n 1 $logfile #just print the entry
+	exit 0
+fi
+
+#if not, generate it and output to log!
+
+#print the current date + a randomly chosen command
+loc=$(echo $PATH | tr ':' '\n' | shuf -n 1 )
+command=$(ls $loc | shuf -n 1)
+echo $today $(compgen -c | shuf -n 1) >> $logfile
+tail -n 1 $logfile 
