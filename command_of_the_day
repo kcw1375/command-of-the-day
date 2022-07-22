@@ -8,6 +8,10 @@
 today=$(date +"%F")
 logfile=~/command_of_the_day.log #insert here
 
+function show_command() {
+	tail -n 1 $logfile | cut -d ' ' -f 2 #the command is second place in space-delimited format
+}
+
 #make the logfile if it doesn't exist
 if ! test -e $logfile
 then
@@ -17,7 +21,7 @@ fi
 #check if there is entry for today's command
 if [ $(tail -n 1 $logfile | cut -d ' ' -f 1 -) = $today ]
 then
-	tail -n 1 $logfile #just print the entry
+	show_command #just print the entry
 	exit 0
 fi
 
@@ -27,4 +31,4 @@ fi
 loc=$(echo $PATH | tr ':' '\n' | shuf -n 1 )
 command=$(ls $loc | shuf -n 1)
 echo $today $(compgen -c | shuf -n 1) >> $logfile
-tail -n 1 $logfile 
+show_command
