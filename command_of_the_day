@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# the command line option
+switch=$1
+
+
 #ideally, the cotd should be the same for all users
 # so we want to actually fix the homedirectory thing
 
@@ -12,6 +16,16 @@ function show_command() {
 	tail -n 1 $logfile | cut -d ' ' -f 2 #the command is second place in space-delimited format
 }
 
+function info() {
+	#get a quick description of the command from the manual using man
+	local command_name=$1
+
+	manual=$(man $command_name) #save cause it seems like reading the manual takes time
+	declare -i line_number=$(grep -m 1 -n "\bNAME\b" <<< $manual | awk -F: '{print $1}') #find line with NAME on it
+	line_number=$(($line_number + 1)) #synopsis follows the line with NAME on it
+	sed "${line_number}q;d" <<< $manual #print the description
+}
+
 #make the logfile if it doesn't exist
 if ! test -e $logfile
 then
@@ -21,7 +35,13 @@ fi
 #check if there is entry for today's command
 if [ $(tail -n 1 $logfile | cut -d ' ' -f 1 -) = $today ]
 then
-	show_command #just print the entry
+	command_name=$(show_command) #just print the entry
+	if [ $switch = 'info' ]
+	then
+		info $command_name
+	else
+		echo $command_name
+	fi
 	exit 0
 fi
 
@@ -31,4 +51,10 @@ fi
 loc=$(echo $PATH | tr ':' '\n' | shuf -n 1 )
 command=$(ls $loc | shuf -n 1)
 echo $today $(compgen -c | shuf -n 1) >> $logfile
-show_command
+command_name=$(show_command)
+if [ $switch = 'info' ]
+then
+	info $command_name
+else
+	echo $command_name
+fi
